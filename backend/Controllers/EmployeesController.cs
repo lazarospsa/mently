@@ -1,6 +1,7 @@
 using mently.Data;
 using mently.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace mently.Controllers
 {
@@ -22,8 +23,6 @@ namespace mently.Controllers
             return Ok(employees);
         }
 
-
-        
         [HttpPost]
         public async Task<IActionResult> AddEmployee([FromBody] Employee employeeRequest)
         {
@@ -33,6 +32,63 @@ namespace mently.Controllers
             await _mentlyDbContext.SaveChangesAsync();
 
             return Ok(employeeRequest);
+        }
+
+        [HttpGet]
+        [Route("{id:Guid}")]
+        public async Task<IActionResult> GetEmployee([FromRoute] Guid id)
+        {
+            var employee = _mentlyDbContext.Employees.FirstOrDefault(x => x.Id == id);
+
+            if (employee == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(employee);
+        }
+
+        [HttpPut]
+        [Route("{id:Guid}")]
+        public async Task<IActionResult> UpdateEmployee([FromRoute] Guid id, Employee updateEmployeeRequest)
+        {
+            Employee employee = await GetEmployees().FindAsync(id);
+
+            if (employee == null)
+            {
+                return NotFound();
+            }
+
+            employee.Name = updateEmployeeRequest.Name;
+            employee.Email = updateEmployeeRequest.Email;
+            employee.Salary = updateEmployeeRequest.Salary;
+            employee.Phone = updateEmployeeRequest.Phone;
+            employee.Department = updateEmployeeRequest.Department;
+
+            await _mentlyDbContext.SaveChangesAsync();
+
+            return Ok(employee);
+        }
+
+        private DbSet<Employee> GetEmployees()
+        {
+            return _mentlyDbContext.Employees;
+        }
+
+        [HttpDelete]
+        [Route("{id:Guid}")]
+        public async Task<IActionResult> DeleteEmployee([FromRoute] Guid id)
+        {
+            Employee employee = await GetEmployees().FindAsync(id);
+
+            if (employee == null)
+            {
+                return NotFound();
+            }
+
+            GetEmployees().Remove(employee);
+
+            return Ok();
         }
     }
 }
