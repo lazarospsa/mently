@@ -18,7 +18,7 @@ namespace mently.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAllEmployees()
         {
-            var employees = _mentlyDbContext.Employees.ToList();
+            var employees = await _mentlyDbContext.Employees.ToListAsync();
 
             return Ok(employees);
         }
@@ -38,7 +38,7 @@ namespace mently.Controllers
         [Route("{id:Guid}")]
         public async Task<IActionResult> GetEmployee([FromRoute] Guid id)
         {
-            var employee = _mentlyDbContext.Employees.FirstOrDefault(x => x.Id == id);
+            var employee = await _mentlyDbContext.Employees.FirstOrDefaultAsync(x => x.Id == id);
 
             if (employee == null)
             {
@@ -80,14 +80,12 @@ namespace mently.Controllers
         public async Task<IActionResult> DeleteEmployee([FromRoute] Guid id)
         {
             Employee employee = await GetEmployees().FindAsync(id);
-
             if (employee == null)
             {
                 return NotFound();
             }
-
+            // Microsoft.EntityFrameworkCore.ChangeTracking.EntityEntry<Employee> entityEntry = _mentlyDbContext.Employees.Remove(employee);
             GetEmployees().Remove(employee);
-
             return Ok();
         }
     }
